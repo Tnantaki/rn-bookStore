@@ -107,7 +107,18 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
 
   const deleteBook = async (id: string) => {
     try {
-    } catch (error) {}
+      await databases.deleteDocument(
+        DATABASE_ID,
+        COLLECTION_ID,
+        id
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      } else {
+        throw new Error("Unknown error occurred");
+      }
+    }
   };
 
   useEffect(() => {
@@ -123,6 +134,10 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
 
         if (events[0].includes("create")) {
           setBooks((prevBooks) => [...prevBooks, payload]);
+        }
+
+        if (events[0].includes("delete")) {
+          setBooks((prevBooks) => prevBooks.filter(book => book.$id !== payload.$id));
         }
       });
     }
