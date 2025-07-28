@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
 import { ID, Models, Permission, Query, Role } from "react-native-appwrite";
-import { databases } from "../lib/appwrite";
+import { client, databases } from "../lib/appwrite";
 import { useSession } from "./SessionContext";
 
 const DATABASE_ID = "6878ab380027fd1f035e";
@@ -12,7 +12,7 @@ export interface Book {
   description: string;
 }
 
-type BookDocument = Book & Models.Document
+type BookDocument = Book & Models.Document;
 
 export const BooksContext = createContext<{
   books: BookDocument[];
@@ -46,7 +46,7 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
         [Query.equal("userId", user.$id)]
       );
 
-      setBooks(res.documents)
+      setBooks(res.documents);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(error.message);
@@ -57,7 +57,7 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
   };
 
   const readBookById = async (id: string) => {
-    return null
+    return null;
     try {
     } catch (error) {}
   };
@@ -103,10 +103,26 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    if (books.length === 0) {
-      console.log("fetching books")
+    let unsubscribe = undefined;
+    const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
+
+    if (user) {
       fetchBooks();
+
+      unsubscribe = client.subscribe<BookDocument>(channel, (res) => {
+        const { payload, events } = res;
+
+        if (events[0].includes("create")) {
+          setBooks((prevBooks) => [...prevBooks, payload]);
+        }
+      });
     }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [user]);
 
   return (
