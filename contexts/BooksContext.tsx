@@ -109,6 +109,7 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
     if (user) {
       fetchBooks();
 
+      // appwrite provide realtime update which run via Websocket connection
       unsubscribe = client.subscribe<BookDocument>(channel, (res) => {
         const { payload, events } = res;
 

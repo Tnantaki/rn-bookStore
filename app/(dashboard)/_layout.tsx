@@ -45,6 +45,7 @@ export default function TabLayout() {
             ),
           }}
         />
+        <Tabs.Screen name="books/[id]" options={{ href: null }} />
       </Tabs>
     </BooksProvider>
   );
