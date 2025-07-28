@@ -12,19 +12,19 @@ export interface Book {
   description: string;
 }
 
-type BookDocument = Book & Models.Document;
+export type BookDocument = Book & Models.Document;
 
 export const BooksContext = createContext<{
   books: BookDocument[];
   fetchBooks: () => Promise<void>;
-  readBookById: (id: string) => Promise<BookDocument | null>;
+  fetchBookById: (id: string) => Promise<BookDocument | null>;
   createBook: (book: Book) => Promise<void>;
   updateBook: (id: string, book: Book) => Promise<void>;
   deleteBook: (id: string) => Promise<void>;
 }>({
   books: [],
   fetchBooks: async () => {},
-  readBookById: async (id: string) => null,
+  fetchBookById: async (id: string) => null,
   createBook: async (book: Book) => {},
   updateBook: async (id: string, book: Book) => {},
   deleteBook: async (id: string) => {},
@@ -56,10 +56,18 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const readBookById = async (id: string) => {
-    return null;
+  const fetchBookById = async (id: string) => {
     try {
-    } catch (error) {}
+      const res = databases.getDocument<BookDocument>(
+        DATABASE_ID,
+        COLLECTION_ID,
+        id
+      );
+      return res;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   };
 
   // ID.unique(),
@@ -131,7 +139,7 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
       value={{
         books,
         fetchBooks,
-        readBookById,
+        fetchBookById,
         createBook,
         updateBook,
         deleteBook,
