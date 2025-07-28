@@ -1,21 +1,30 @@
-import { createContext, PropsWithChildren, useState } from "react";
+import { createContext, PropsWithChildren, useEffect, useState } from "react";
+import { ID, Models, Permission, Query, Role } from "react-native-appwrite";
 import { databases } from "../lib/appwrite";
-import { ID, Permission, Role } from "react-native-appwrite";
 import { useSession } from "./SessionContext";
 
 const DATABASE_ID = "6878ab380027fd1f035e";
 const COLLECTION_ID = "6878ab50003731062f7d";
 
 export interface Book {
-  title: string
-  author: string
-  description: string
+  title: string;
+  author: string;
+  description: string;
 }
 
-export const BooksContext = createContext({
+type BookDocument = Book & Models.Document
+
+export const BooksContext = createContext<{
+  books: BookDocument[];
+  fetchBooks: () => Promise<void>;
+  readBookById: (id: string) => Promise<BookDocument | null>;
+  createBook: (book: Book) => Promise<void>;
+  updateBook: (id: string, book: Book) => Promise<void>;
+  deleteBook: (id: string) => Promise<void>;
+}>({
   books: [],
-  readBooks: async () => {},
-  readBookById: async (id: string) => {},
+  fetchBooks: async () => {},
+  readBookById: async (id: string) => null,
   createBook: async (book: Book) => {},
   updateBook: async (id: string, book: Book) => {},
   deleteBook: async (id: string) => {},
@@ -23,14 +32,32 @@ export const BooksContext = createContext({
 
 export const BooksProvider = ({ children }: PropsWithChildren) => {
   const { session, user } = useSession();
-  const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState<BookDocument[]>([]);
 
-  const readBooks = async () => {
+  const fetchBooks = async () => {
     try {
-    } catch (error) {}
+      if (!user) {
+        throw new Error("There's no user id");
+      }
+
+      const res = await databases.listDocuments<BookDocument>(
+        DATABASE_ID,
+        COLLECTION_ID,
+        [Query.equal("userId", user.$id)]
+      );
+
+      setBooks(res.documents)
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      } else {
+        throw new Error("Unknown error occurred");
+      }
+    }
   };
 
   const readBookById = async (id: string) => {
+    return null
     try {
     } catch (error) {}
   };
@@ -42,7 +69,7 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
   const createBook = async (book: Book) => {
     try {
       if (!user) {
-        throw new Error("There's no user id")
+        throw new Error("There's no user id");
       }
 
       const newBook = await databases.createDocument(
@@ -75,11 +102,18 @@ export const BooksProvider = ({ children }: PropsWithChildren) => {
     } catch (error) {}
   };
 
+  useEffect(() => {
+    if (books.length === 0) {
+      console.log("fetching books")
+      fetchBooks();
+    }
+  }, [user]);
+
   return (
     <BooksContext.Provider
       value={{
         books,
-        readBooks,
+        fetchBooks,
         readBookById,
         createBook,
         updateBook,

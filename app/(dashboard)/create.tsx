@@ -1,4 +1,5 @@
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
+import { useState } from "react";
 import {
   Keyboard,
   Text,
@@ -6,8 +7,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { Account, useSession } from "../../contexts/SessionContext";
-import { useState } from "react";
 import Button from "../../components/button";
 import { Book } from "../../contexts/BooksContext";
 import useBooks from "../../hooks/useBooks";
@@ -51,7 +50,7 @@ export default function Create() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View className="flex-1 items-center justify-center">
-        <Text className="text-3xl font-semibold text-blue-600">
+        <Text className="text-2xl font-semibold text-blue-600">
           Add a New Book
         </Text>
         <View className="flex-0 bg-red w-8/12 m-4 gap-5">

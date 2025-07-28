@@ -91,7 +91,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     initialUser();
-  });
+  }, []);
 
   return (
     <AuthContext
